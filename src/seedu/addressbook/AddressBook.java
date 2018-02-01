@@ -467,10 +467,10 @@ public class AddressBook {
      */
     private static String executeEditPerson(String commandArgs) {
         final String supposedIndex = extractTargetSupposedIndexFromEditPersonArgs(commandArgs);
-        if (!isEditPersonArgsValid(supposedIndex)) {
+        if (!isSelectPersonArgsValid(supposedIndex)) {
             return getMessageForInvalidCommandInput(COMMAND_EDIT_WORD, getUsageInfoForEditCommand());
         }
-        final int targetVisibleIndex = extractTargetIndexFromEditPersonArgs(supposedIndex);
+        final int targetVisibleIndex = extractTargetIndexFromSelectPersonArgs(supposedIndex);
         if (!isDisplayIndexValidForLastPersonListingView(targetVisibleIndex)) {
             return MESSAGE_INVALID_PERSON_DISPLAYED_INDEX;
         }
@@ -488,6 +488,16 @@ public class AddressBook {
         return editPersonInAddressBook(targetInModel, newPerson)
                ? getMessageForSuccessfulEditPerson(targetInModel, newPerson) // success
                : MESSAGE_PERSON_NOT_IN_ADDRESSBOOK;                          // not found
+    }
+
+    /**
+     * Extracts the target's supposed index from the raw edit person args string
+     *
+     * @param rawArgs raw command args string for the edit person command
+     * @return extracted index
+     */
+    private static String extractTargetSupposedIndexFromEditPersonArgs(String rawArgs) {
+        return rawArgs.split(" ")[0];
     }
 
     /**
@@ -568,10 +578,10 @@ public class AddressBook {
      * @return feedback display message for the operation result
      */
     private static String executeDeletePerson(String commandArgs) {
-        if (!isDeletePersonArgsValid(commandArgs)) {
+        if (!isSelectPersonArgsValid(commandArgs)) {
             return getMessageForInvalidCommandInput(COMMAND_DELETE_WORD, getUsageInfoForDeleteCommand());
         }
-        final int targetVisibleIndex = extractTargetIndexFromDeletePersonArgs(commandArgs);
+        final int targetVisibleIndex = extractTargetIndexFromSelectPersonArgs(commandArgs);
         if (!isDisplayIndexValidForLastPersonListingView(targetVisibleIndex)) {
             return MESSAGE_INVALID_PERSON_DISPLAYED_INDEX;
         }
@@ -582,47 +592,12 @@ public class AddressBook {
     }
 
     /**
-     * Checks validity of edit person argument string's format.
+     * Checks validity of select person argument string's format.
      *
-     * @param rawArgs raw command args string for the edit person command
-     * @return whether the input args string is valid
+     * @param rawArgs raw command args string for commands selecting a person.
+     * @return whether the input args string is valid.
      */
-    private static boolean isEditPersonArgsValid(String rawArgs) {
-        try {
-            final int extractedIndex = Integer.parseInt(rawArgs); // use standard libraries to parse
-            return extractedIndex >= DISPLAYED_INDEX_OFFSET;
-        } catch (NumberFormatException nfe) {
-            return false;
-        }
-    }
-
-    /**
-     * Extracts the target's supposed index from the raw edit person args string
-     *
-     * @param rawArgs raw command args string for the edit person command
-     * @return extracted index
-     */
-    private static String extractTargetSupposedIndexFromEditPersonArgs(String rawArgs) {
-        return rawArgs.split(" ")[0];
-    }
-
-    /**
-     * Extracts the target's index from the raw edit person args string
-     *
-     * @param rawArgs raw command args string for the edit person command
-     * @return extracted index
-     */
-    private static int extractTargetIndexFromEditPersonArgs(String rawArgs) {
-        return Integer.parseInt(rawArgs.trim());
-    }
-
-    /**
-     * Checks validity of delete person argument string's format.
-     *
-     * @param rawArgs raw command args string for the delete person command
-     * @return whether the input args string is valid
-     */
-    private static boolean isDeletePersonArgsValid(String rawArgs) {
+    private static boolean isSelectPersonArgsValid(String rawArgs) {
         try {
             final int extractedIndex = Integer.parseInt(rawArgs.trim()); // use standard libraries to parse
             return extractedIndex >= DISPLAYED_INDEX_OFFSET;
@@ -632,12 +607,12 @@ public class AddressBook {
     }
 
     /**
-     * Extracts the target's index from the raw delete person args string
+     * Extracts the target's index from the raw select person args string
      *
-     * @param rawArgs raw command args string for the delete person command
-     * @return extracted index
+     * @param rawArgs raw command args string for commands selecting a person.
+     * @return extracted index.
      */
-    private static int extractTargetIndexFromDeletePersonArgs(String rawArgs) {
+    private static int extractTargetIndexFromSelectPersonArgs(String rawArgs) {
         return Integer.parseInt(rawArgs.trim());
     }
 
