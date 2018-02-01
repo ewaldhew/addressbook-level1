@@ -92,6 +92,17 @@
   list
 
 ##########################################################
+# test delete person command
+##########################################################
+
+  # should catch invalid index
+  edit -1 p/1234 e/example@a.com
+
+  # should edit correct person
+  edit 1 e/test@ema.il p/299999
+  list
+
+##########################################################
 # test clear command
 ##########################################################
 

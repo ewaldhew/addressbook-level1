@@ -55,6 +55,10 @@
 || 	Parameters: NAME p/PHONE_NUMBER e/EMAIL
 || 	Example: add John Doe p/98765432 e/johnd@gmail.com
 || 
+|| edit: Edits details for the person identified by the index number used in the last find/list call.
+||      Parameters: INDEX p/NEW_PHONE_NUMBER e/NEW_EMAIL
+||      Example: edit 1 p/98765432 e/johnd@gmail.com
+|| 
 || find: Finds all persons whose names contain any of the specified keywords (case-sensitive) and displays them as a list with index numbers.
 || 	Parameters: KEYWORD [MORE_KEYWORDS]
 || 	Example: find alice bob charlie
@@ -266,6 +270,22 @@
 || Enter command: || [Command entered:  list]
 || 	1. Betsy Choo  Phone Number: 222222  Email: benchoo@nus.edu.sg
 || 	2. Dickson Ee  Phone Number: 444444  Email: dickson@nus.edu.sg
+|| 
+|| 2 persons found!
+|| ===================================================
+|| Enter command: || [Command entered:  edit -1 p/1234 e/example@a.com]
+|| Invalid command format: edit 
+|| edit: Edits details for the person identified by the index number used in the last find/list call.
+||      Parameters: INDEX p/NEW_PHONE_NUMBER e/NEW_EMAIL
+||      Example: edit 1 p/98765432 e/johnd@gmail.com
+|| 
+|| ===================================================
+|| Enter command: || [Command entered:  edit 1 e/test@ema.il p/299999]
+|| Person edited: Betsy Choo, Phone: 222222->299999, Email: benchoo@nus.edu.sg->test@ema.il
+|| ===================================================
+|| Enter command: || [Command entered:  list]
+||      1. Betsy Choo  Phone Number: 299999  Email: test@ema.il
+||      2. Dickson Ee  Phone Number: 444444  Email: dickson@nus.edu.sg
 || 
 || 2 persons found!
 || ===================================================
