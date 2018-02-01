@@ -67,6 +67,7 @@ public class AddressBook {
      * =========================================================================
      */
     private static final String MESSAGE_ADDED = "New person added: %1$s, Phone: %2$s, Email: %3$s";
+    private static final String MESSAGE_EDITED = "Person edited: %1$s, Phone: %2$s->%3$s, Email: %4$s->%5$s";
     private static final String MESSAGE_ADDRESSBOOK_CLEARED = "Address book has been cleared!";
     private static final String MESSAGE_COMMAND_HELP = "%1$s: %2$s";
     private static final String MESSAGE_COMMAND_HELP_PARAMETERS = "\tParameters: %1$s";
@@ -448,6 +449,56 @@ public class AddressBook {
     }
 
     /**
+     * Edits a person (specified by the command args) to the address book.
+     * The entire command arguments string is treated as a string representation of the person to edit.
+     *
+     * @param commandArgs full command args string from the user
+     * @return feedback display message for the operation result
+     */
+    private static String executeEditPerson(String commandArgs) {
+        final String supposedIndex = extractTargetSupposedIndexFromEditPersonArgs(commandArgs);
+        if (!isEditPersonArgsValid(supposedIndex)) {
+            return getMessageForInvalidCommandInput(COMMAND_EDIT_WORD, getUsageInfoForEditCommand());
+        }
+        final int targetVisibleIndex = extractTargetIndexFromEditPersonArgs(supposedIndex);
+        if (!isDisplayIndexValidForLastPersonListingView(targetVisibleIndex)) {
+            return MESSAGE_INVALID_PERSON_DISPLAYED_INDEX;
+        }
+        // try decoding a person from the raw args
+        final Optional<HashMap<PersonProperty, String>> decodeResult = decodePersonFromString(commandArgs);
+
+        // checks if args are valid (decode result will not be present if the person is invalid)
+        if (!decodeResult.isPresent()) {
+            return getMessageForInvalidCommandInput(COMMAND_EDIT_WORD, getUsageInfoForEditCommand());
+        }
+
+        final HashMap<PersonProperty, String> newPerson = decodeResult.get();
+        final HashMap<PersonProperty, String> targetInModel = getPersonByLastVisibleIndex(targetVisibleIndex);
+
+        return editPersonInAddressBook(targetInModel, newPerson)
+               ? getMessageForSuccessfulEditPerson(targetInModel, newPerson) // success
+               : MESSAGE_PERSON_NOT_IN_ADDRESSBOOK;                          // not found
+    }
+
+    /**
+     * Constructs a feedback message for a successful edit person command execution.
+     *
+     * @param editedPerson person who was successfully edited.
+     * @param newPerson the new details of the person.
+     * @return successful edit person feedback message.
+     * @see #executeEditPerson(String)
+     */
+    private static String getMessageForSuccessfulEditPerson(HashMap<PersonProperty, String> editedPerson,
+                                                            HashMap<PersonProperty, String> newPerson) {
+        return String.format(MESSAGE_EDITED,
+                getNameFromPerson(editedPerson),
+                getPhoneFromPerson(editedPerson),
+                getPhoneFromPerson(newPerson),
+                getEmailFromPerson(editedPerson),
+                getEmailFromPerson(newPerson));
+    }
+
+    /**
      * Finds and lists all persons in address book whose name contains any of the argument keywords.
      * Keyword matching is case sensitive.
      *
@@ -518,6 +569,41 @@ public class AddressBook {
         return deletePersonFromAddressBook(targetInModel)
                ? getMessageForSuccessfulDelete(targetInModel) // success
                : MESSAGE_PERSON_NOT_IN_ADDRESSBOOK;           // not found
+    }
+
+    /**
+     * Checks validity of edit person argument string's format.
+     *
+     * @param rawArgs raw command args string for the edit person command
+     * @return whether the input args string is valid
+     */
+    private static boolean isEditPersonArgsValid(String rawArgs) {
+        try {
+            final int extractedIndex = Integer.parseInt(rawArgs); // use standard libraries to parse
+            return extractedIndex >= DISPLAYED_INDEX_OFFSET;
+        } catch (NumberFormatException nfe) {
+            return false;
+        }
+    }
+
+    /**
+     * Extracts the target's supposed index from the raw edit person args string
+     *
+     * @param rawArgs raw command args string for the edit person command
+     * @return extracted index
+     */
+    private static String extractTargetSupposedIndexFromEditPersonArgs(String rawArgs) {
+        return rawArgs.split(" ")[0];
+    }
+
+    /**
+     * Extracts the target's index from the raw edit person args string
+     *
+     * @param rawArgs raw command args string for the edit person command
+     * @return extracted index
+     */
+    private static int extractTargetIndexFromEditPersonArgs(String rawArgs) {
+        return Integer.parseInt(rawArgs.trim());
     }
 
     /**
@@ -794,6 +880,23 @@ public class AddressBook {
     private static void addPersonToAddressBook(HashMap<PersonProperty, String> person) {
         ALL_PERSONS.add(person);
         savePersonsToFile(getAllPersonsInAddressBook(), storageFilePath);
+    }
+
+    /**
+     * Edits a person in the address book. Saves changes to storage file.
+     *
+     * @param person to edit.
+     * @param replacement entry with new details.
+     */
+    private static boolean editPersonInAddressBook(HashMap<PersonProperty, String> person,
+                                                   HashMap<PersonProperty, String> replacement) {
+        final int index = ALL_PERSONS.indexOf(person);
+        if (index >= 0) {
+            replacement.put(PersonProperty.NAME, getNameFromPerson(person));
+            ALL_PERSONS.set(index, replacement);
+            savePersonsToFile(getAllPersonsInAddressBook(), storageFilePath);
+        }
+        return index >= 0;
     }
 
     /**
